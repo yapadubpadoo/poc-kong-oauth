@@ -1,3 +1,5 @@
+certificate/*.pem
+
 # Logs
 logs
 *.log
