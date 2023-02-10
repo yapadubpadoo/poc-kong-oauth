@@ -1,6 +1,11 @@
 # poc-kong-jwt
 
-The steps below reuse some result of [OAuth 2.0 POC](README.md)
+## Prepare RS256 Key Pair
+
+```bash
+openssl rsa -in private.pem -outform PEM -pubout -out public.pem
+openssl genrsa -out private.pem 2048
+```
 
 ## Create test service
 
@@ -27,46 +32,43 @@ curl -k -i -X POST https://localhost:8001/services/api3/plugins \
     --data "name=jwt"
 ```
 
-## Create a JWT credential
+## Create a consumer
 
 ```bash
-curl -k -i -X POST https://localhost:8001/consumers/company1/jwt -H "Content-Type: application/x-www-form-urlencoded"
+curl -k -i -X POST https://localhost:8001/consumers/ \
+  --data "username=mobile-app"
 ```
 
-it will produce the result like this
+## Create a JWT credential
 
-```json
-{
-  "id": "7a69abf1-6791-4ed0-9995-f1afafe83dbe",
-  "secret": "Pb0vmuz8RaaMI3LxuH5dqnuP0abpZ0f1", # this is JWT secret
-  "consumer": {
-    "id": "edb883f2-1340-4690-90dd-8e1ac7f2cde7"
-  },
-  "algorithm": "HS256",
-  "created_at": 1673188973,
-  "tags": null,
-  "rsa_public_key": null,
-  "key": "oPA3TtDM40XdlhVXfFuzB1FYNCFKIjGV" # will be used as iss when signed
-}
+Grab the Firebase public key from https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com and save it into `.pem` file
+
+```bash
+curl -k -i -X POST https://localhost:8001/consumers/mobile-app/jwt \
+  --data "algorithm=RS256" \
+  --data "key=user-service" \
+  --data-urlencode "rsa_public_key=-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1v3rwj8bX0AsP41oWxor
+xmayIElBUzbXgR7n71fysOzTcuq5CfokGC3HO+H2QN9STdMjZaT2Y5gDk4KKnWRM
+PB3eBNeEE1sVCD3bCY4lhuEoQWCy0uEv3rioYJcSfs7lU0q4RzoMnbdtzIC1KlDN
+xJq4vV3DRW59AJVgpn9Ue0d0E2dys4kmCiY5GHKzsapX+R5+/L8X+JpYo1qVLLuN
+gyxzGwGxm9cbocvdmSMLuXG96jUQZRAIYVvZw33QfI4H0QsN/jZyy5vWparCJkPV
+VneEcgLLyLsRGSFVx8je1riGJnYdXyozE8pKAhl3Fdezy3Jhw2FS1LMV2XGkDFxd
+GwIDAQAB
+-----END PUBLIC KEY-----
+"
 ```
 
 ## Craft an JWT access token
 
-Open this link and generate JWT https://jwt.io/#debugger-io?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJvUEEzVHRETTQwWGRsaFZYZkZ1ekIxRllOQ0ZLSWpHViJ9.YclHdPyqwglq19l99OZx4rIk7E3VroypkesmH-YYvsU
+```bash
+node auth-service-jwt.js
 
-Payload
-
-```json
-{
-  "iss": "oPA3TtDM40XdlhVXfFuzB1FYNCFKIjGV"
-}
 ```
 
-and use the generated secert above, then we will get the JWT token.
-
-Access the service
+## Access the service
 
 ```bash
-curl -k -i -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJvUEEzVHRETTQwWGRsaFZYZkZ1ekIxRllOQ0ZLSWpHViJ9.mt5jOT09ZsgegupS_FyPZn8r0tTGmho2mIjcheXdkqY' \
+curl -k -i -H 'Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IjgwMWM4ODc5ODA4YjA3MWM0OTkyZjYwNzMwOGQ5NTVmIn0.eyJ1c2VyIjoxLCJpc3MiOiJ1c2VyLXNlcnZpY2UifQ.e2AOAMfVs8TPPnWU68UjIqVYG34Ig3R7P9RvOFRrGGaLg1nORFuC3TEAqNWhP3iRFigUCxosk1wX9c5lhu4C_WwrA1C6-zBi2KP7iVSfUxuBwxFvxr3kkDOXoJNaGeKNRTHVXwO-4JBUzpjYSmuwmUL6Pb2b0VazfL1Kbe-ZtVxpGE-thGtYYfCRgkTO1uj3g8XaDzHa5O39NR4AqxXnXJaruTgXLFqfNacIi3fal6rrhCOfmAHL0CLv7gkevrhOCNjkybhrdU-7c-ie2AWtZiWRREIQBzAXJZT9ZP9xhKbdZzIKPDuVNyn-MykNKupw4nfvWOfqEMX5Cpr6U5XUM' \
     -X GET 'https://localhost:8000/api3/anything'
 ```
