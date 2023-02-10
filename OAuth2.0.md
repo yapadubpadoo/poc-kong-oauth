@@ -13,7 +13,7 @@ Ref
 - https://konghq.com/blog/kong-gateway-oauth2
 - https://docs.konghq.com/hub/kong-inc/oauth2/
 
-### Generate self-signed certificates
+## Generate self-signed certificates
 
 Kong OAuth 2.0 requires HTTPS
 
@@ -29,7 +29,7 @@ openssl rsa -in keytmp.pem -out key.pem # then follow the instuction
 
 See `docker-compose.yml` on how the files mount and use in Kong
 
-### Create test services
+## Create test services
 
 Create API 1 and API 2
 
@@ -107,9 +107,9 @@ curl -k -i -X POST https://localhost:8001/consumers/company1/oauth2 \
  --data "hash_secret=true"
 ```
 
-### Create an access token
+## Create an access token
 
-#### [Authorization Code Grant](https://www.rfc-editor.org/rfc/rfc6749#section-4.1)
+### [Authorization Code Grant](https://www.rfc-editor.org/rfc/rfc6749#section-4.1)
 
 Acquire a code
 
@@ -133,7 +133,7 @@ Exchange for an access token
     --data-urlencode 'client_secret=supersercet'
 ```
 
-#### [Implicit Grant](https://www.rfc-editor.org/rfc/rfc6749#section-4.2)
+### [Implicit Grant](https://www.rfc-editor.org/rfc/rfc6749#section-4.2)
 
 ```bash
   curl -k -i -X POST 'https://localhost:8000/authentication/oauth2/authorize' \
@@ -144,7 +144,7 @@ Exchange for an access token
     --data-urlencode 'response_type=token'
 ```
 
-#### [Client Credentials](https://www.rfc-editor.org/rfc/rfc6749#section-4.4)
+### [Client Credentials](https://www.rfc-editor.org/rfc/rfc6749#section-4.4)
 
 ```bash
   curl -k -i -X POST 'https://localhost:8000/authentication/oauth2/token' \
