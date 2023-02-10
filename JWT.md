@@ -41,7 +41,7 @@ curl -k -i -X POST https://localhost:8001/consumers/ \
 
 ## Create a JWT credential
 
-Grab the Firebase public key from https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com and save it into `.pem` file
+Grab the Firebase public key `public.pem`
 
 ```bash
 curl -k -i -X POST https://localhost:8001/consumers/mobile-app/jwt \
